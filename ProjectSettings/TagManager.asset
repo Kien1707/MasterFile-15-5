@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Cluster
+  - GoodParticle
+  - BadParticle
   layers:
   - Default
   - TransparentFX

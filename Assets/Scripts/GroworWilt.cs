@@ -4,45 +4,68 @@ using System.Collections.Generic;
 
 public class GroworWilt : MonoBehaviour
 {
-    [Header("References")]
+    [Header("Player Proximity")]
     public Transform player;
-    [Header("Additional Animators")]
-    public List<Animator> zoneAnimators;
+    public float detectionRadius = 2f;
+    private bool playerInRange = false;
 
     [Header("State Settings")]
     public int currentState = 0; // -1, 0, 1
-    public float detectionRadius = 2f;
 
-    private bool playerInRange = false;
+    private List<Animator> zoneAnimators;
+    private List<ParticleSystem> goodParticles = new List<ParticleSystem>();
+    private List<ParticleSystem> badParticles = new List<ParticleSystem>();
 
     void Start()
     {
+        // Find all animators in children
+        zoneAnimators = new List<Animator>(GetComponentsInChildren<Animator>(true));
+        if (zoneAnimators.Count == 0)
+            Debug.LogWarning("No animators found in children!");
+        else
+        {
+            foreach (Animator a in zoneAnimators)
+                a.SetInteger("State", currentState);
+        }
+
+        // Auto‑collect particles by tag
+        CollectParticlesByTag("GoodParticle", goodParticles);
+        CollectParticlesByTag("BadParticle", badParticles);
+
+        Debug.Log($"Found {goodParticles.Count} good particles, {badParticles.Count} bad particles in {gameObject.name}");
+
+        // Find player if not assigned
         if (player == null)
         {
             GameObject found = GameObject.FindGameObjectWithTag("Player");
             if (found != null) player = found.transform;
             else Debug.LogError("No player found!");
         }
-
-        if (zoneAnimators == null || zoneAnimators.Count == 0)
-        {
-            Debug.LogError("No zone animators assigned!");
-        }
-        else
-        {
-            foreach (Animator a in zoneAnimators) a.SetInteger("State", currentState);
-        }
     }
 
-    public bool IsPlayerInRange()
+    void CollectParticlesByTag(string tag, List<ParticleSystem> targetList)
     {
-        return playerInRange;
+        GameObject[] taggedObjects = GameObject.FindGameObjectsWithTag(tag);
+        foreach (GameObject obj in taggedObjects)
+        {
+            if (obj.transform.IsChildOf(transform))
+            {
+                ParticleSystem ps = obj.GetComponent<ParticleSystem>();
+                if (ps != null) targetList.Add(ps);
+            }
+        }
     }
+
+    public bool IsPlayerInRange() { return playerInRange; }
 
     public void OnFruitAnimationTriggered(GameObject fruit)
     {
         Glow fruitScript = fruit.GetComponent<Glow>();
-        if (fruitScript == null) { Debug.LogError("No Glow script on fruit!"); return; }
+        if (fruitScript == null)
+        {
+            Debug.LogError("No Glow script on fruit!");
+            return;
+        }
 
         if (fruitScript.isGoodFruit && currentState < 1)
             StartCoroutine(DelayedStateChange(+1));
@@ -53,19 +76,57 @@ public class GroworWilt : MonoBehaviour
     private IEnumerator DelayedStateChange(int direction)
     {
         yield return new WaitForSeconds(2f);
-        currentState = Mathf.Clamp(currentState + direction, -1, 1);
-        foreach (Animator a in zoneAnimators) a.SetInteger("State", currentState);
+        
+        int newState = Mathf.Clamp(currentState + direction, -1, 1);
+        if (newState == currentState) yield break;
+        
+        currentState = newState;
+        
+        // Update all animators
+        foreach (Animator a in zoneAnimators)
+            if (a != null && a.isActiveAndEnabled)
+                a.SetInteger("State", currentState);
+
+        if (currentState == 1)
+        {
+            TriggerSpawn spawner = GetComponentInChildren<TriggerSpawn>();
+            if (spawner != null)
+                spawner.SpawnObjects();
+            else
+                Debug.LogWarning("No TriggerSpawn found on this GameObject");
+        }
+        
+        // Play particles based on direction
+        if (direction > 0)
+        {
+            foreach (ParticleSystem ps in goodParticles)
+                if (ps != null) ps.Play();
+        }
+        else if (direction < 0)
+        {
+            foreach (ParticleSystem ps in badParticles)
+                if (ps != null) ps.Play();
+        }
+        
         Debug.Log($"State changed to {currentState}");
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) playerInRange = true;
+        if (other.CompareTag("Player"))
+        {
+            playerInRange = true;
+            Debug.Log("Player entered cluster zone");
+        }
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player")) playerInRange = false;
+        if (other.CompareTag("Player"))
+        {
+            playerInRange = false;
+            Debug.Log("Player exited cluster zone");
+        }
     }
 
     void OnDrawGizmosSelected()

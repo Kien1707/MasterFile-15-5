@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f18179cc1d4eb464bbab818cd733b823
+guid: 05ba8d1a0e579dc4b898f3e6db1f8cbb
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,13 +7,38 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Leaves.tree_
-    second: {fileID: 2100000, guid: 347990d64b2958f419eb8bf1bd3f72c1, type: 2}
+      name: Branch
+    second: {fileID: 2100000, guid: 2750d3e5f76bc934891af3cf4cfeea86, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Trunk.tree.0
-    second: {fileID: 2100000, guid: a4c71aad3bf3e7947aa53305d94d358a, type: 2}
+      name: Branch.flower
+    second: {fileID: 2100000, guid: b1e39a34ae905c34cb6af0d5d7dd3ce6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Branch.flowers
+    second: {fileID: 2100000, guid: b1e39a34ae905c34cb6af0d5d7dd3ce6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Flourish.branch
+    second: {fileID: 2100000, guid: 0ef9922130a16664cb41b920fea9996a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Flourish.leaves
+    second: {fileID: -7765059966476231853, guid: 3d562d23f5fa4e34ba48a4778560d2ac, type: 3}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Flowers.yellow
+    second: {fileID: 2100000, guid: bc76ecd59d6992e46b93f88da683808d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grass.fancy
+    second: {fileID: 2100000, guid: 4bd1458c50730ef46acb6a504293af88, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -25,7 +50,7 @@ ModelImporter:
     resampleCurves: 1
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
-    motionNodeName: 
+    motionNodeName: Armature.003/Root bone
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -41,11 +66,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: NeutraltoFlourish
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -5784005261616917065
+      name: 3.NoFlowersIdle
+      takeName: Armature.003|Armature.003Action
+      internalID: 8645343760740499401
       firstFrame: 0
-      lastFrame: 148
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -70,11 +95,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: NeutraltoWilt
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -5121459340952355932
-      firstFrame: 148
-      lastFrame: 448
+      name: 3.NoFlowerstoFlowers
+      takeName: Armature.003|Armature.003Action
+      internalID: -648647770705190079
+      firstFrame: 17
+      lastFrame: 134
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -99,69 +124,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Idle Neutral
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -3325867715455786675
-      firstFrame: 150
-      lastFrame: 178
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 0
-      loopBlend: 0
-      loopBlendOrientation: 0
-      loopBlendPositionY: 0
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: Idle flourish
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -2762700483917628543
-      firstFrame: 0
-      lastFrame: 5
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 0
-      loopBlend: 1
-      loopBlendOrientation: 0
-      loopBlendPositionY: 0
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: IdleWilt
-      takeName: Armature.001|Armature.001Action.001
-      internalID: 1668560835310691027
-      firstFrame: 425
-      lastFrame: 448
+      name: 3.FlowersIdle
+      takeName: Armature.003|Armature.003Action
+      internalID: -5683335122662203433
+      firstFrame: 137
+      lastFrame: 140
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -226,13 +193,13 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 180
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
-    normalSmoothingSource: 2
+    normalSmoothingSource: 0
   referencedClips: []
   importAnimation: 1
   humanDescription:

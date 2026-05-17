@@ -24,13 +24,20 @@ public class PickableFruit : MonoBehaviour
     public float disappearDelay = 3f;
     public GameObject poofEffect;
 
+    [Header("Jiggle settings")]
+    public float duration = 0.7f;
+    public float speed = 10f;           // oscillations per second
+    public float amplitude = 0.15f;      // how far left/right
+    
+
     private bool playerInRange = false;
     private Transform player;
     private bool isOnGround = false;
     private bool isAnimating = false;
     private bool isDisappearing = false;
+    private bool isJiggling = false;      // ← prevents hovering during jiggle
 
-    public bool isHeld = false;  // ← CHANGED from isHeldFruit
+    public bool isHeld = false;
 
     private Rigidbody rb;
     private Vector3 animationLockPosition;
@@ -61,7 +68,7 @@ public class PickableFruit : MonoBehaviour
             Debug.Log($"Player in range, isOnGround={isOnGround}, E key down={Input.GetKeyDown(KeyCode.E)}");
         }
 
-        // Pick up (FIXED: uses isHeld not isHeldFruit)
+        // Pick up
         if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isHeld && !isOnGround && currentlyHeldFruit == null)
             HoldFruit();
 
@@ -73,11 +80,34 @@ public class PickableFruit : MonoBehaviour
         else if (isOnGround && playerInRange && Input.GetKeyDown(KeyCode.E) && currentlyHeldFruit == null)
             PickupFromGround();
 
-        // Trigger animation
+        // Trigger animation or jiggle
         else if (isHeld && Input.GetKeyDown(KeyCode.F) && !isAnimating && !isDisappearing)
-            TriggerAnimation();
+        {
+            // Find any GroworWilt on tagged "Cluster" that is in range and NOT in state 0
+            bool block = false;
+            GameObject[] clusters = GameObject.FindGameObjectsWithTag("Cluster");
+            foreach (GameObject clusterObj in clusters)
+            {
+                GroworWilt gw = clusterObj.GetComponent<GroworWilt>();
+                if (gw != null && gw.IsPlayerInRange() && gw.currentState != 0)
+                {
+                    block = true;
+                    break;
+                }
+            }
 
-        if (isHeld && !isAnimating && !isDisappearing)
+            if (block)
+            {
+                StartCoroutine(JiggleFruit());   // jiggle instead of normal animation
+            }
+            else
+            {
+                TriggerAnimation();              // normal behaviour
+            }
+        }
+
+        // Hover only when held, not animating, not disappearing, and not jiggling
+        if (isHeld && !isAnimating && !isDisappearing && !isJiggling)
             HoverAbovePlayer();
     }
 
@@ -85,25 +115,12 @@ public class PickableFruit : MonoBehaviour
     {
         Debug.Log($"=== NotifyCluster CALLED from {gameObject.name} ===");
         
-        ClusterStates[] allClusters = FindObjectsOfType<ClusterStates>();
-        Debug.Log($"Found {allClusters.Length} clusters in scene");
-        GroworWilt[] newClusters = FindObjectsOfType<GroworWilt>();
+        GroworWilt[] clusters = FindObjectsOfType<GroworWilt>();
+        Debug.Log($"Found {clusters.Length} GroworWilt clusters in scene");
         
-        foreach (GroworWilt cluster in newClusters)
+        foreach (GroworWilt cluster in clusters)
         {
             if (cluster.IsPlayerInRange())
-            {
-                cluster.OnFruitAnimationTriggered(this.gameObject);
-                return;
-            }
-        }
-        
-        foreach (ClusterStates cluster in allClusters)
-        {
-            bool isPlayerInRange = cluster.IsPlayerInRange();
-            Debug.Log($"Cluster {cluster.name}: IsPlayerInRange = {isPlayerInRange}");
-            
-            if (isPlayerInRange)
             {
                 Debug.Log($"Found cluster with player in range! Sending to {cluster.name}");
                 cluster.OnFruitAnimationTriggered(this.gameObject);
@@ -128,6 +145,26 @@ public class PickableFruit : MonoBehaviour
             rb.useGravity = false;
         }
     }
+
+    private IEnumerator JiggleFruit()
+    {
+        isJiggling = true;
+        float elapsed = 0f;
+        Vector3 startPos = transform.position;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float offset = Mathf.Sin(elapsed * speed * Mathf.PI * 2f) * amplitude;
+            transform.position = startPos + transform.right * offset;
+            yield return null;
+        }
+
+        transform.position = startPos;
+        isJiggling = false;
+    }
+
+        
 
     private void PickupFromGround()
     {
@@ -167,6 +204,15 @@ public class PickableFruit : MonoBehaviour
         fruitAnimator.SetTrigger(animationTriggerName);
 
         NotifyCluster();
+
+        // --- register the fruit with the counter ---
+        FruitCounter counter = FindFirstObjectByType<FruitCounter>();
+        if (counter != null)
+        {
+            Glow glow = GetComponent<Glow>();
+            if (glow != null)
+                counter.AddFruit(glow.isGoodFruit);
+        }
 
         StartCoroutine(DelayedParticle());
         StartCoroutine(WaitForAnimation());
@@ -233,16 +279,12 @@ public class PickableFruit : MonoBehaviour
         
         CapsuleCollider capsule = player.GetComponent<CapsuleCollider>();
         if (capsule != null)
-        {
             playerHeight = capsule.height;
-        }
         else
         {
             CharacterController controller = player.GetComponent<CharacterController>();
             if (controller != null)
-            {
                 playerHeight = controller.height;
-            }
         }
         
         Vector3 target = player.position;
@@ -260,7 +302,6 @@ public class PickableFruit : MonoBehaviour
         if (!isHeld && !isOnGround && collision.gameObject.CompareTag("Ground"))
         {
             isOnGround = true;
-
             if (rb != null)
             {
                 rb.isKinematic = true;

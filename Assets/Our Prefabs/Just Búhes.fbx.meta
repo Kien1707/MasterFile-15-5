@@ -1,19 +1,9 @@
 fileFormatVersion: 2
-guid: f18179cc1d4eb464bbab818cd733b823
+guid: a1fdea6839c9faf4ab2d50f8b52ba6f5
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Leaves.tree_
-    second: {fileID: 2100000, guid: 347990d64b2958f419eb8bf1bd3f72c1, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Trunk.tree.0
-    second: {fileID: 2100000, guid: a4c71aad3bf3e7947aa53305d94d358a, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -41,11 +31,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: NeutraltoFlourish
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -5784005261616917065
+      name: 2.NoBushIdle
+      takeName: Armature.002|Armature.002Action
+      internalID: 5138602965388526686
       firstFrame: 0
-      lastFrame: 148
+      lastFrame: 11
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -70,11 +60,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: NeutraltoWilt
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -5121459340952355932
-      firstFrame: 148
-      lastFrame: 448
+      name: 2.NoBushtoBush
+      takeName: Armature.002|Armature.002Action
+      internalID: -1230395797879794091
+      firstFrame: 30
+      lastFrame: 107
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -99,11 +89,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Idle Neutral
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -3325867715455786675
-      firstFrame: 150
-      lastFrame: 178
+      name: 2.BushtoBIGBUSH
+      takeName: Armature.002|Armature.002Action
+      internalID: 601325763720565998
+      firstFrame: 126
+      lastFrame: 229
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -128,11 +118,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Idle flourish
-      takeName: Armature.001|Armature.001Action.001
-      internalID: -2762700483917628543
-      firstFrame: 0
-      lastFrame: 5
+      name: 2.BushIdle
+      takeName: Armature.002|Armature.002Action
+      internalID: -4612618804774851610
+      firstFrame: 104
+      lastFrame: 111
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -140,7 +130,7 @@ ModelImporter:
       loop: 0
       hasAdditiveReferencePose: 0
       loopTime: 0
-      loopBlend: 1
+      loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
@@ -157,11 +147,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: IdleWilt
-      takeName: Armature.001|Armature.001Action.001
-      internalID: 1668560835310691027
-      firstFrame: 425
-      lastFrame: 448
+      name: 2.BIGBUSHIDLE
+      takeName: Armature.002|Armature.002Action
+      internalID: -5808456141983448711
+      firstFrame: 226
+      lastFrame: 229
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -226,13 +216,13 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 180
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
-    normalSmoothingSource: 2
+    normalSmoothingSource: 0
   referencedClips: []
   importAnimation: 1
   humanDescription:

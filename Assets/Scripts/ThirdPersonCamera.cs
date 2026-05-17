@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
@@ -6,23 +7,45 @@ public class ThirdPersonCamera : MonoBehaviour
     public Transform target; // Player
 
     [Header("Camera Settings")]
-    public Vector3 offset = new Vector3(0f, 2f, -4f);
+    public Vector3 offset = new Vector3(0f, 2f, -10f);
     public float mouseSensitivity = 120f;
     public float smoothSpeed = 0.15f;
 
     [Header("Zoom")]
     public float zoomSpeed = 5f;
-    public float minDistance = 2f;
-    public float maxDistance = 10f;
+    public float minDistance = 9f;
+    public float maxDistance = 15f;
+    public float zoomSmoothness = 0.2f; // NEW: damping for zoom (0 = instant, higher = slower)
 
-    private float currentDistance;
+    private float currentZoomTarget;   // target zoom distance (set by scroll)
+    private float currentZoomVelocity; // for smooth damping
     private float xRotation = 20f;
     private float yRotation = 0f;
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-        currentDistance = offset.magnitude;
+        currentZoomTarget = offset.magnitude;
+
+        // Start the slight zoom‑out animation (e.g. from 2 to target distance over 3s)
+        StartCoroutine(InitialZoomOut());
+    }
+
+    IEnumerator InitialZoomOut()
+    {
+        float startDistance = 4f;   // starting close
+        float endDistance = currentZoomTarget;
+        float duration = 3f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            currentZoomTarget = Mathf.Lerp(startDistance, endDistance, t);
+            yield return null;
+        }
+        currentZoomTarget = endDistance;
     }
 
     void LateUpdate()
@@ -35,9 +58,6 @@ public class ThirdPersonCamera : MonoBehaviour
         RotatePlayerWithCamera();
     }
 
-    // ---------------------------------------------------------
-    // 1. MOUSE LOOK
-    // ---------------------------------------------------------
     void HandleMouseLook()
     {
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
@@ -48,37 +68,41 @@ public class ThirdPersonCamera : MonoBehaviour
         xRotation = Mathf.Clamp(xRotation, -30f, 60f);
     }
 
-    // ---------------------------------------------------------
-    // 2. ZOOM
-    // ---------------------------------------------------------
     void HandleZoom()
     {
         float scroll = Input.GetAxis("Mouse ScrollWheel");
-
         if (scroll != 0f)
         {
-            currentDistance -= scroll * zoomSpeed;
-            currentDistance = Mathf.Clamp(currentDistance, minDistance, maxDistance);
+            currentZoomTarget -= scroll * zoomSpeed;
+            currentZoomTarget = Mathf.Clamp(currentZoomTarget, minDistance, maxDistance);
         }
     }
 
-    // ---------------------------------------------------------
-    // 3. CAMERA FOLLOW
-    // ---------------------------------------------------------
     void FollowTarget()
     {
         Quaternion rotation = Quaternion.Euler(xRotation, yRotation, 0f);
-        Vector3 zoomOffset = offset.normalized * currentDistance;
+        // Smoothly interpolate current distance toward target using damping
+        float currentDistance = Mathf.SmoothDamp(
+            GetCurrentDistance(), 
+            currentZoomTarget, 
+            ref currentZoomVelocity, 
+            zoomSmoothness
+        );
 
+        Vector3 zoomOffset = offset.normalized * currentDistance;
         Vector3 desiredPos = target.position + rotation * zoomOffset;
 
         transform.position = Vector3.Lerp(transform.position, desiredPos, smoothSpeed);
         transform.LookAt(target);
     }
 
-    // ---------------------------------------------------------
-    // 4. CAMERA → PLAYER ROTATION (Y‑AXIS ONLY)
-    // ---------------------------------------------------------
+    // Helper to get the actual current distance (magnitude from target to camera)
+    float GetCurrentDistance()
+    {
+        if (target == null) return currentZoomTarget;
+        return Vector3.Distance(transform.position, target.position);
+    }
+
     void RotatePlayerWithCamera()
     {
         Vector3 camForward = transform.forward;
