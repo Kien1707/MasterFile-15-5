@@ -120,5 +120,6 @@ public class FruitCounter : MonoBehaviour
             c.enabled = false;
 
         cam.enabled = true;
+        RenderSettings.fog = false;
     }
 }
