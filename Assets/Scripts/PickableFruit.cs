@@ -44,7 +44,7 @@ public class PickableFruit : MonoBehaviour
 
     // REQUIRED BY MicUI + Glow
     public static GameObject currentlyHeldFruit = null;
-    public static bool AnyFruitHeld { get; private set; }
+    public static bool AnyFruitHeld;
 
     void Start()
     {

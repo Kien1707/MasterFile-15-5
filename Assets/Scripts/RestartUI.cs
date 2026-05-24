@@ -10,8 +10,9 @@ public class RestartUI : MonoBehaviour
     public Button restartButton;
 
     [Header("Fade Settings")]
-    public float fadeDuration = 1f;
+    public float fadeDuration = 2f;
     public float delayBeforeShow = 5f;
+    public float targetAlpha = 0.8f;
 
     private FruitCounter fruitCounter;
     private bool isEnding = false;
@@ -78,23 +79,23 @@ public class RestartUI : MonoBehaviour
         while (t < fadeDuration)
         {
             t += Time.deltaTime;
-            overlayPanel.alpha = Mathf.Lerp(0f, 0.5f, t / fadeDuration);
+            overlayPanel.alpha = Mathf.Lerp(0f, targetAlpha, t / fadeDuration);
             yield return null;
         }
-        overlayPanel.alpha = 0.5f;
+        overlayPanel.alpha = targetAlpha;
     }
 
     void RestartGame()
     {
-        // Reset static variables
         PickableFruit.currentlyHeldFruit = null;
+        PickableFruit.AnyFruitHeld = false;
+        RenderSettings.fog = true;
 
-        // Stop any playing particles
         var allParticles = FindObjectsOfType<ParticleSystem>();
         foreach (var ps in allParticles)
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-        // Reload the scene
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene("Canvas UI", LoadSceneMode.Additive);
     }
 }
