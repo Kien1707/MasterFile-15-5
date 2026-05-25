@@ -22,6 +22,9 @@ public class PlayerMovement : MonoBehaviour
     public float mouseSensitivity = 120f;
     public float mouseSmoothTime = 0.05f;
 
+    [Header("Sound")]
+    public PlayerSound sound;
+
     private CharacterController controller;
     private float verticalVelocity;
     private float currentVelocity;
@@ -32,6 +35,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 currentMouseDelta;
     private Vector2 currentMouseDeltaVelocity;
     private float cameraPitch = 0f;
+
+    // FOOTSTEP STATE
+    private bool isFootstepPlaying = false;
 
     void Start()
     {
@@ -45,10 +51,11 @@ public class PlayerMovement : MonoBehaviour
         HandleDoubleTapSprint();
         RotatePlayerToCamera();
         MovePlayer();
+        HandleFootstep();
     }
 
     // ---------------------------------------------------------
-    // SMOOTH CAMERA LOOK (NO SHAKE, NO SPRING)
+    // CAMERA LOOK
     // ---------------------------------------------------------
     void HandleCameraLook()
     {
@@ -113,7 +120,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // ---------------------------------------------------------
-    // MOVEMENT (WASD theo hướng camera)
+    // MOVEMENT
     // ---------------------------------------------------------
     void MovePlayer()
     {
@@ -147,5 +154,43 @@ public class PlayerMovement : MonoBehaviour
         finalMove.y = verticalVelocity;
 
         controller.Move(finalMove * Time.deltaTime);
+    }
+
+    // ---------------------------------------------------------
+    // FOOTSTEP START / STOP + RANDOM START TIME
+    // ---------------------------------------------------------
+    void HandleFootstep()
+    {
+        bool isMoving =
+            Input.GetKey(KeyCode.W) ||
+            Input.GetKey(KeyCode.A) ||
+            Input.GetKey(KeyCode.S) ||
+            Input.GetKey(KeyCode.D);
+
+        if (isMoving && controller.isGrounded)
+        {
+            if (!isFootstepPlaying)
+            {
+                AudioClip clip = sound.library.GetClip(PlayerAction.FootstepsGrass);
+
+                sound.audioSource.clip = clip;
+                sound.audioSource.loop = true;
+
+                // RANDOM START TIME
+                float randomStart = Random.Range(0f, clip.length);
+                sound.audioSource.time = randomStart;
+
+                sound.audioSource.Play();
+                isFootstepPlaying = true;
+            }
+        }
+        else
+        {
+            if (isFootstepPlaying)
+            {
+                sound.audioSource.Stop();
+                isFootstepPlaying = false;
+            }
+        }
     }
 }

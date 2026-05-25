@@ -12,16 +12,17 @@ public class FruitCounter : MonoBehaviour
     private int goodFruitCount = 0;
     private int badFruitCount = 0;
 
-    // Public read‑only properties
     public int GoodCount => goodFruitCount;
     public int BadCount => badFruitCount;
     public bool EndingTriggered => endingTriggered;
 
     [Header("Ending Cameras")]
-    public Camera neutralEndingCamera;   // good == bad
-    public Camera finalEndingCamera;     // good != bad
+    public Camera neutralEndingCamera;
+    public Camera finalEndingCamera;
 
-    // Particle systems (auto‑found by name)
+    [Header("Sound")]
+    public PlayerSound sound;
+
     private ParticleSystem goodEndingParticle;
     private ParticleSystem badEndingParticle;
 
@@ -31,40 +32,30 @@ public class FruitCounter : MonoBehaviour
     {
         UpdateUI();
 
-        // Find particle systems by exact name
         GameObject goodObj = GameObject.Find("ParticleEndingGood");
         if (goodObj != null) goodEndingParticle = goodObj.GetComponent<ParticleSystem>();
-        else Debug.LogWarning("No GameObject named 'ParticleEnding1' found");
 
         GameObject badObj = GameObject.Find("ParticleEndingBad");
         if (badObj != null) badEndingParticle = badObj.GetComponent<ParticleSystem>();
-        else Debug.LogWarning("No GameObject named 'ParticleEnding2' found");
 
-        // Ensure they are stopped at start
         if (goodEndingParticle != null) goodEndingParticle.Stop();
         if (badEndingParticle != null) badEndingParticle.Stop();
     }
 
-    // Called from PickableFruit when the fruit actually triggers its unfold animation
     public void AddFruit(bool isGood)
     {
         if (endingTriggered) return;
 
         int total = goodFruitCount + badFruitCount;
-        if (total >= maxFruits) return;   // already full
+        if (total >= maxFruits) return;
 
-        if (isGood)
-            goodFruitCount++;
-        else
-            badFruitCount++;
+        if (isGood) goodFruitCount++;
+        else badFruitCount++;
 
         UpdateUI();
 
-        // Check if we reached the limit
         if (goodFruitCount + badFruitCount >= maxFruits)
-        {
             TriggerEnding();
-        }
     }
 
     void UpdateUI()
@@ -80,24 +71,31 @@ public class FruitCounter : MonoBehaviour
     {
         endingTriggered = true;
 
-        // Play particle effect based on outcome
+        // GOOD ENDING
         if (goodFruitCount > badFruitCount)
         {
             if (goodEndingParticle != null)
                 goodEndingParticle.Play();
-            else
-                Debug.LogWarning("Good ending particle not found!");
+
+            if (sound != null)
+                sound.Play(PlayerAction.GoodEnding);
         }
+        // BAD ENDING
         else if (badFruitCount > goodFruitCount)
         {
             if (badEndingParticle != null)
                 badEndingParticle.Play();
-            else
-                Debug.LogWarning("Bad ending particle not found!");
+
+            if (sound != null)
+                sound.Play(PlayerAction.BadEnding);
         }
+        // NEUTRAL ENDING
         else
         {
-            Debug.Log("Neutral ending → no particle burst");
+            Debug.Log("Neutral ending → playing neutral sound");
+
+            if (sound != null)
+                sound.Play(PlayerAction.NeutralEnding);
         }
 
         // Switch camera

@@ -16,6 +16,9 @@ public class GroworWilt : MonoBehaviour
     private List<ParticleSystem> goodParticles = new List<ParticleSystem>();
     private List<ParticleSystem> badParticles = new List<ParticleSystem>();
 
+    [Header("Sound")]
+    public PlayerSound sound;   // ← thêm PlayerSound để phát âm
+
     void Start()
     {
         // Find all animators in children
@@ -58,6 +61,9 @@ public class GroworWilt : MonoBehaviour
 
     public bool IsPlayerInRange() { return playerInRange; }
 
+    // ---------------------------------------------------------
+    // FRUIT TRIGGER
+    // ---------------------------------------------------------
     public void OnFruitAnimationTriggered(GameObject fruit)
     {
         Glow fruitScript = fruit.GetComponent<Glow>();
@@ -73,20 +79,45 @@ public class GroworWilt : MonoBehaviour
             StartCoroutine(DelayedStateChange(-1));
     }
 
+    // ---------------------------------------------------------
+    // STATE CHANGE + RANDOM SOUND
+    // ---------------------------------------------------------
     private IEnumerator DelayedStateChange(int direction)
     {
         yield return new WaitForSeconds(2f);
-        
+
         int newState = Mathf.Clamp(currentState + direction, -1, 1);
         if (newState == currentState) yield break;
-        
+
         currentState = newState;
-        
+
         // Update all animators
         foreach (Animator a in zoneAnimators)
             if (a != null && a.isActiveAndEnabled)
                 a.SetInteger("State", currentState);
 
+        // PLAY RANDOM SOUND
+        if (sound != null)
+        {
+            if (direction > 0) // GROWING
+            {
+                PlayerAction growSound = (Random.value < 0.5f)
+                    ? PlayerAction.Growing1
+                    : PlayerAction.Growing2;
+
+                sound.Play(growSound);
+            }
+            else if (direction < 0) // DECAYING
+            {
+                PlayerAction decaySound = (Random.value < 0.5f)
+                    ? PlayerAction.Decaying1
+                    : PlayerAction.Decaying2;
+
+                sound.Play(decaySound);
+            }
+        }
+
+        // Spawn if fully grown
         if (currentState == 1)
         {
             TriggerSpawn spawner = GetComponentInChildren<TriggerSpawn>();
@@ -95,8 +126,8 @@ public class GroworWilt : MonoBehaviour
             else
                 Debug.LogWarning("No TriggerSpawn found on this GameObject");
         }
-        
-        // Play particles based on direction
+
+        // Play particles
         if (direction > 0)
         {
             foreach (ParticleSystem ps in goodParticles)
@@ -107,10 +138,13 @@ public class GroworWilt : MonoBehaviour
             foreach (ParticleSystem ps in badParticles)
                 if (ps != null) ps.Play();
         }
-        
+
         Debug.Log($"State changed to {currentState}");
     }
 
+    // ---------------------------------------------------------
+    // PLAYER RANGE
+    // ---------------------------------------------------------
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -129,6 +163,9 @@ public class GroworWilt : MonoBehaviour
         }
     }
 
+    // ---------------------------------------------------------
+    // GIZMOS
+    // ---------------------------------------------------------
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

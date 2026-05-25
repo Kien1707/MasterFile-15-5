@@ -261,7 +261,6 @@ RectTransform:
   m_Children:
   - {fileID: 1871915280746359872}
   - {fileID: 6354255041605461675}
-  - {fileID: 3433373440183967008}
   - {fileID: 2033824611707191043}
   - {fileID: 9137157993480170166}
   - {fileID: 130857200722702016}
@@ -7297,6 +7296,7 @@ Transform:
   - {fileID: 4817132051550420647}
   - {fileID: 8054463796898578555}
   - {fileID: 864106440578145358}
+  - {fileID: 3433373440183967008}
   - {fileID: 3303818779800750259}
   - {fileID: 2784915262998545610}
   - {fileID: 874319971295114225}
@@ -7544,6 +7544,7 @@ MonoBehaviour:
   rotationSmoothTime: 100
   mouseSensitivity: 120
   mouseSmoothTime: 100
+  sound: {fileID: 0}
 --- !u!1 &5943341870181849444
 GameObject:
   m_ObjectHideFlags: 0
@@ -7572,11 +7573,11 @@ Transform:
   m_GameObject: {fileID: 5943341870181849444}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: -965, y: -416, z: 532}
-  m_LocalScale: {x: 0.7818379, y: 0.7818376, z: 0.7818376}
+  m_LocalPosition: {x: -3.5263062, y: -33.699997, z: 380.86234}
+  m_LocalScale: {x: 0.43734056, y: 0.43734038, z: 0.43734038}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3303818779800750259}
+  m_Father: {fileID: 5809859578348699728}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
 --- !u!20 &9150719374039837259
 Camera:
@@ -13512,7 +13513,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndingParticleTrigger
   goodEndingParticle: {fileID: 5181291326445955436}
   badEndingParticle: {fileID: 6514642358566791935}
-  boundaryCollider: {fileID: 0}
+  audioSource: {fileID: 0}
+  goodEndingSound: {fileID: 0}
+  badEndingSound: {fileID: 0}
 --- !u!1 &9046737970715358392
 GameObject:
   m_ObjectHideFlags: 0

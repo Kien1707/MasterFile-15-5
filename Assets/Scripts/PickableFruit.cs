@@ -26,16 +26,18 @@ public class PickableFruit : MonoBehaviour
 
     [Header("Jiggle settings")]
     public float duration = 0.7f;
-    public float speed = 10f;           // oscillations per second
-    public float amplitude = 0.15f;      // how far left/right
-    
+    public float speed = 10f;
+    public float amplitude = 0.15f;
+
+    [Header("Sound")]
+    public PlayerSound sound;
 
     private bool playerInRange = false;
     private Transform player;
     private bool isOnGround = false;
     private bool isAnimating = false;
     private bool isDisappearing = false;
-    private bool isJiggling = false;      // ← prevents hovering during jiggle
+    private bool isJiggling = false;
 
     public bool isHeld = false;
 
@@ -62,13 +64,7 @@ public class PickableFruit : MonoBehaviour
 
     void Update()
     {
-        // Debug auto-pickup
-        if (playerInRange && !isHeld && currentlyHeldFruit == null)
-        {
-            Debug.Log($"Player in range, isOnGround={isOnGround}, E key down={Input.GetKeyDown(KeyCode.E)}");
-        }
-
-        // Pick up
+        // Pick up from tree
         if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isHeld && !isOnGround && currentlyHeldFruit == null)
             HoldFruit();
 
@@ -83,7 +79,6 @@ public class PickableFruit : MonoBehaviour
         // Trigger animation or jiggle
         else if (isHeld && Input.GetKeyDown(KeyCode.F) && !isAnimating && !isDisappearing)
         {
-            // Find any GroworWilt on tagged "Cluster" that is in range and NOT in state 0
             bool block = false;
             GameObject[] clusters = GameObject.FindGameObjectsWithTag("Cluster");
             foreach (GameObject clusterObj in clusters)
@@ -96,48 +91,46 @@ public class PickableFruit : MonoBehaviour
                 }
             }
 
+            // Nếu bị block → chỉ jiggle, KHÔNG âm thanh
             if (block)
             {
-                StartCoroutine(JiggleFruit());   // jiggle instead of normal animation
+                StartCoroutine(JiggleFruit());
             }
             else
             {
-                TriggerAnimation();              // normal behaviour
+                // Được unfold → phát âm + animation
+                if (sound != null)
+                {
+                    Glow glow = GetComponent<Glow>();
+                    if (glow != null)
+                    {
+                        if (glow.isGoodFruit)
+                            sound.Play(PlayerAction.UnfoldGood);
+                        else
+                            sound.Play(PlayerAction.UnfoldBad);
+                    }
+                }
+
+                TriggerAnimation();
             }
         }
 
-        // Hover only when held, not animating, not disappearing, and not jiggling
+        // Hover only when held
         if (isHeld && !isAnimating && !isDisappearing && !isJiggling)
             HoverAbovePlayer();
     }
 
-    void NotifyCluster()
-    {
-        Debug.Log($"=== NotifyCluster CALLED from {gameObject.name} ===");
-        
-        GroworWilt[] clusters = FindObjectsOfType<GroworWilt>();
-        Debug.Log($"Found {clusters.Length} GroworWilt clusters in scene");
-        
-        foreach (GroworWilt cluster in clusters)
-        {
-            if (cluster.IsPlayerInRange())
-            {
-                Debug.Log($"Found cluster with player in range! Sending to {cluster.name}");
-                cluster.OnFruitAnimationTriggered(this.gameObject);
-                return;
-            }
-        }
-        
-        Debug.Log("No cluster with player in range found!");
-    }
-
+    // ---------------------------------------------------------
+    // PICK UP FROM TREE
+    // ---------------------------------------------------------
     public void HoldFruit()
-    {    
-        Debug.Log($"=== HOLD FRUIT: {gameObject.name} ===");
+    {
+        if (sound != null)
+            sound.Play(PlayerAction.PickTheFruit);
+
         isHeld = true;
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
-        Debug.Log($"currentlyHeldFruit set to: {currentlyHeldFruit?.name}");
 
         if (rb != null)
         {
@@ -146,6 +139,45 @@ public class PickableFruit : MonoBehaviour
         }
     }
 
+    // ---------------------------------------------------------
+    // PICK UP FROM GROUND
+    // ---------------------------------------------------------
+    private void PickupFromGround()
+    {
+        if (sound != null)
+            sound.Play(PlayerAction.PickTheFruit);
+
+        isHeld = true;
+        isOnGround = false;
+        currentlyHeldFruit = this.gameObject;
+        AnyFruitHeld = true;
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+    }
+
+    // ---------------------------------------------------------
+    // DROP FRUIT
+    // ---------------------------------------------------------
+    private void DropFruit()
+    {
+        isHeld = false;
+        currentlyHeldFruit = null;
+        AnyFruitHeld = false;
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
+    }
+
+    // ---------------------------------------------------------
+    // JIGGLE
+    // ---------------------------------------------------------
     private IEnumerator JiggleFruit()
     {
         isJiggling = true;
@@ -164,35 +196,9 @@ public class PickableFruit : MonoBehaviour
         isJiggling = false;
     }
 
-        
-
-    private void PickupFromGround()
-    {
-        isHeld = true;
-        isOnGround = false;
-        currentlyHeldFruit = this.gameObject;
-        AnyFruitHeld = true;
-
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-    }
-
-    private void DropFruit()
-    {
-        isHeld = false;
-        currentlyHeldFruit = null;
-        AnyFruitHeld = false;
-
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-        }
-    }
-
+    // ---------------------------------------------------------
+    // ANIMATION
+    // ---------------------------------------------------------
     private void TriggerAnimation()
     {
         if (fruitAnimator == null)
@@ -205,7 +211,6 @@ public class PickableFruit : MonoBehaviour
 
         NotifyCluster();
 
-        // --- register the fruit with the counter ---
         FruitCounter counter = FindFirstObjectByType<FruitCounter>();
         if (counter != null)
         {
@@ -271,12 +276,15 @@ public class PickableFruit : MonoBehaviour
         isDisappearing = false;
     }
 
+    // ---------------------------------------------------------
+    // HOVER
+    // ---------------------------------------------------------
     private void HoverAbovePlayer()
     {
         if (player == null) return;
 
         float playerHeight = 1f;
-        
+
         CapsuleCollider capsule = player.GetComponent<CapsuleCollider>();
         if (capsule != null)
             playerHeight = capsule.height;
@@ -286,17 +294,20 @@ public class PickableFruit : MonoBehaviour
             if (controller != null)
                 playerHeight = controller.height;
         }
-        
+
         Vector3 target = player.position;
         target.y += playerHeight + hoverHeight + heightOffset;
-        
+
         float hoverOffset = Mathf.Sin(Time.time * hoverSpeed) * 0.1f;
         target.y += hoverOffset;
-        
+
         transform.position = Vector3.Lerp(transform.position, target, Time.deltaTime * 10f);
         transform.Rotate(Vector3.up * rotateSpeed * Time.deltaTime);
     }
 
+    // ---------------------------------------------------------
+    // COLLISION + TRIGGERS
+    // ---------------------------------------------------------
     void OnCollisionEnter(Collision collision)
     {
         if (!isHeld && !isOnGround && collision.gameObject.CompareTag("Ground"))
@@ -310,11 +321,10 @@ public class PickableFruit : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter(Collider other) 
+    void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) 
+        if (other.CompareTag("Player"))
         {
-            Debug.Log("TRIGGER ENTERED");
             playerInRange = true;
             player = other.transform;
         }
@@ -327,6 +337,22 @@ public class PickableFruit : MonoBehaviour
             playerInRange = false;
             if (!isHeld)
                 player = null;
+        }
+    }
+
+    // ---------------------------------------------------------
+    // CLUSTER NOTIFY
+    // ---------------------------------------------------------
+    void NotifyCluster()
+    {
+        GroworWilt[] clusters = FindObjectsOfType<GroworWilt>();
+        foreach (GroworWilt cluster in clusters)
+        {
+            if (cluster.IsPlayerInRange())
+            {
+                cluster.OnFruitAnimationTriggered(this.gameObject);
+                return;
+            }
         }
     }
 }

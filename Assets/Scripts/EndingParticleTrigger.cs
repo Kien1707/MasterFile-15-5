@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class EndingParticleTrigger : MonoBehaviour
 {
-    [Header("Particle Systems (assign in inspector)")]
-    public ParticleSystem goodEndingParticle; // "ParticleEnding1"
-    public ParticleSystem badEndingParticle;  // "ParticleEnding2"
+    [Header("Particle Systems")]
+    public ParticleSystem goodEndingParticle;
+    public ParticleSystem badEndingParticle;
 
-    [Header("Boundary (optional – not used here, kept for compatibility)")]
-    public Collider boundaryCollider; // can be left empty
+    [Header("Sound (PlayerSound)")]
+    public PlayerSound sound;
 
     private FruitCounter fruitCounter;
     private bool hasTriggered = false;
@@ -17,6 +17,9 @@ public class EndingParticleTrigger : MonoBehaviour
         fruitCounter = FindFirstObjectByType<FruitCounter>();
         if (fruitCounter == null)
             Debug.LogError("FruitCounter not found!");
+
+        if (sound == null)
+            Debug.LogError("PlayerSound NOT assigned in EndingParticleTrigger!");
     }
 
     void Update()
@@ -24,27 +27,41 @@ public class EndingParticleTrigger : MonoBehaviour
         if (fruitCounter == null || hasTriggered) return;
 
         int total = fruitCounter.GoodCount + fruitCounter.BadCount;
+
         if (total >= fruitCounter.maxFruits)
         {
             hasTriggered = true;
 
+            Debug.Log($"ENDING TRIGGERED — Good={fruitCounter.GoodCount}, Bad={fruitCounter.BadCount}");
+
+            // GOOD ENDING
             if (fruitCounter.GoodCount > fruitCounter.BadCount)
             {
                 if (goodEndingParticle != null)
                     goodEndingParticle.Play();
-                else
-                    Debug.LogWarning("Good ending particle not assigned!");
+
+                if (sound != null)
+                {
+                    Debug.Log("Playing GOOD ENDING sound");
+                    sound.Play(PlayerAction.GoodEnding);
+                }
             }
+            // BAD ENDING
             else if (fruitCounter.BadCount > fruitCounter.GoodCount)
             {
                 if (badEndingParticle != null)
                     badEndingParticle.Play();
-                else
-                    Debug.LogWarning("Bad ending particle not assigned!");
+
+                if (sound != null)
+                {
+                    Debug.Log("Playing BAD ENDING sound");
+                    sound.Play(PlayerAction.BadEnding);
+                }
             }
+            // NEUTRAL
             else
             {
-                Debug.Log("Neutral ending → no particle burst");
+                Debug.Log("Neutral ending → no sound");
             }
         }
     }
