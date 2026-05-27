@@ -32,6 +32,12 @@ public class PickableFruit : MonoBehaviour
     [Header("Sound")]
     public PlayerSound sound;
 
+    [Header("Crack Settings")]
+    public Transform crackVolume;
+    public Vector3 crackTargetScale = new Vector3(2f, 2f, 2f);
+    public float crackGrowDuration = 2f;
+    public float crackGroundY = 0f;
+
     private bool playerInRange = false;
     private Transform player;
     private bool isOnGround = false;
@@ -44,7 +50,6 @@ public class PickableFruit : MonoBehaviour
     private Rigidbody rb;
     private Vector3 animationLockPosition;
 
-    // REQUIRED BY MicUI + Glow
     public static GameObject currentlyHeldFruit = null;
     public static bool AnyFruitHeld;
 
@@ -64,19 +69,15 @@ public class PickableFruit : MonoBehaviour
 
     void Update()
     {
-        // Pick up from tree
         if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isHeld && !isOnGround && currentlyHeldFruit == null)
             HoldFruit();
 
-        // Drop
         else if (isHeld && Input.GetKeyDown(KeyCode.E) && !isAnimating && !isDisappearing)
             DropFruit();
 
-        // Pick up from ground
         else if (isOnGround && playerInRange && Input.GetKeyDown(KeyCode.E) && currentlyHeldFruit == null)
             PickupFromGround();
 
-        // Trigger animation or jiggle
         else if (isHeld && Input.GetKeyDown(KeyCode.F) && !isAnimating && !isDisappearing)
         {
             bool block = false;
@@ -91,14 +92,12 @@ public class PickableFruit : MonoBehaviour
                 }
             }
 
-            // Nếu bị block → chỉ jiggle, KHÔNG âm thanh
             if (block)
             {
                 StartCoroutine(JiggleFruit());
             }
             else
             {
-                // Được unfold → phát âm + animation
                 if (sound != null)
                 {
                     Glow glow = GetComponent<Glow>();
@@ -115,14 +114,10 @@ public class PickableFruit : MonoBehaviour
             }
         }
 
-        // Hover only when held
         if (isHeld && !isAnimating && !isDisappearing && !isJiggling)
             HoverAbovePlayer();
     }
 
-    // ---------------------------------------------------------
-    // PICK UP FROM TREE
-    // ---------------------------------------------------------
     public void HoldFruit()
     {
         if (sound != null)
@@ -139,9 +134,6 @@ public class PickableFruit : MonoBehaviour
         }
     }
 
-    // ---------------------------------------------------------
-    // PICK UP FROM GROUND
-    // ---------------------------------------------------------
     private void PickupFromGround()
     {
         if (sound != null)
@@ -159,9 +151,6 @@ public class PickableFruit : MonoBehaviour
         }
     }
 
-    // ---------------------------------------------------------
-    // DROP FRUIT
-    // ---------------------------------------------------------
     private void DropFruit()
     {
         isHeld = false;
@@ -175,9 +164,6 @@ public class PickableFruit : MonoBehaviour
         }
     }
 
-    // ---------------------------------------------------------
-    // JIGGLE
-    // ---------------------------------------------------------
     private IEnumerator JiggleFruit()
     {
         isJiggling = true;
@@ -196,9 +182,6 @@ public class PickableFruit : MonoBehaviour
         isJiggling = false;
     }
 
-    // ---------------------------------------------------------
-    // ANIMATION
-    // ---------------------------------------------------------
     private void TriggerAnimation()
     {
         if (fruitAnimator == null)
@@ -219,14 +202,34 @@ public class PickableFruit : MonoBehaviour
                 counter.AddFruit(glow.isGoodFruit);
         }
 
+        Glow fruitGlow = GetComponent<Glow>();
+        if (fruitGlow != null && !fruitGlow.isGoodFruit)
+            StartCoroutine(GrowCrack());
+
         StartCoroutine(DelayedParticle());
         StartCoroutine(WaitForAnimation());
+    }
+
+    private IEnumerator GrowCrack()
+    {
+        if (crackVolume == null) yield break;
+
+        // snap to ground at fruit's XZ position
+        crackVolume.position = new Vector3(transform.position.x, crackGroundY, transform.position.z);
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / crackGrowDuration;
+            crackVolume.localScale = Vector3.Lerp(Vector3.zero, crackTargetScale, t);
+            yield return null;
+        }
+        crackVolume.localScale = crackTargetScale;
     }
 
     private IEnumerator DelayedParticle()
     {
         yield return new WaitForSeconds(particleDelay);
-
         if (unfoldParticle != null)
             unfoldParticle.Play();
     }
@@ -276,9 +279,6 @@ public class PickableFruit : MonoBehaviour
         isDisappearing = false;
     }
 
-    // ---------------------------------------------------------
-    // HOVER
-    // ---------------------------------------------------------
     private void HoverAbovePlayer()
     {
         if (player == null) return;
@@ -305,9 +305,6 @@ public class PickableFruit : MonoBehaviour
         transform.Rotate(Vector3.up * rotateSpeed * Time.deltaTime);
     }
 
-    // ---------------------------------------------------------
-    // COLLISION + TRIGGERS
-    // ---------------------------------------------------------
     void OnCollisionEnter(Collision collision)
     {
         if (!isHeld && !isOnGround && collision.gameObject.CompareTag("Ground"))
@@ -340,9 +337,6 @@ public class PickableFruit : MonoBehaviour
         }
     }
 
-    // ---------------------------------------------------------
-    // CLUSTER NOTIFY
-    // ---------------------------------------------------------
     void NotifyCluster()
     {
         GroworWilt[] clusters = FindObjectsOfType<GroworWilt>();

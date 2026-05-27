@@ -24,12 +24,11 @@ MonoBehaviour:
     probeSamplingDebugMesh: {fileID: 0}
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
-  m_RendererFeatures:
-  - {fileID: 5717704804388857668}
-  m_RendererFeatureMap: 446724d4395e594f
+  m_RendererFeatures: []
+  m_RendererFeatureMap: 
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
-  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
+  postProcessData: {fileID: 0}
   m_AssetVersion: 3
   m_PrepassLayerMask:
     serializedVersion: 2
@@ -55,6 +54,27 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &3431322341429399639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f9181678d414c3d98c65996cf40585, type: 3}
+  m_Name: PowerCrackRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PowerCrackRendererFeature
+  m_Active: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  overrideMaterial: {fileID: 2100000, guid: 68687b1ac76414c80820f04a950d2b8f, type: 2}
+  computeShader: {fileID: 7200000, guid: 02619cec329ba4e4a8023528c567ecc9, type: 3}
+  textureResolution: 64
+  numPoints: 10
+  seed: 1
 --- !u!114 &5717704804388857668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,17 +87,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f62c9c65cf3354c93be831c8bc075510, type: 3}
   m_Name: ScreenSpaceAmbientOcclusion
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ScreenSpaceAmbientOcclusion
-  m_Active: 1
+  m_Active: 0
   m_Settings:
     AOMethod: 1
     Downsample: 0
     AfterOpaque: 0
     Source: 1
     NormalSamples: 1
-    Intensity: 1
+    Intensity: 1.42
     DirectLightingStrength: 0.523
     Radius: 3
     Samples: 1
     BlurQuality: 0
     Falloff: 300
     SampleCount: -1
+--- !u!114 &6901799618221720847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f9181678d414c3d98c65996cf40585, type: 3}
+  m_Name: PowerCrackRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PowerCrackRendererFeature
+  m_Active: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  overrideMaterial: {fileID: 2100000, guid: 68687b1ac76414c80820f04a950d2b8f, type: 2}
+  computeShader: {fileID: 7200000, guid: 02619cec329ba4e4a8023528c567ecc9, type: 3}
+  textureResolution: 64
+  numPoints: 10
+  seed: 1

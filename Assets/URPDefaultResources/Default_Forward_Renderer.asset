@@ -52,7 +52,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: -6242584045043365670}
-  m_RendererFeatureMap: da48abbae2e25da9
+  - {fileID: 6854002401249041007}
+  m_RendererFeatureMap: da48abbae2e25da96f9a1fb0de4e1e5f
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -81,3 +82,24 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &6854002401249041007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f9181678d414c3d98c65996cf40585, type: 3}
+  m_Name: PowerCrackRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PowerCrackRendererFeature
+  m_Active: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  overrideMaterial: {fileID: 2100000, guid: 68687b1ac76414c80820f04a950d2b8f, type: 2}
+  computeShader: {fileID: 7200000, guid: 02619cec329ba4e4a8023528c567ecc9, type: 3}
+  textureResolution: 64
+  numPoints: 10
+  seed: 1

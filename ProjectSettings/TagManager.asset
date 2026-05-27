@@ -7,6 +7,8 @@ TagManager:
   - Cluster
   - GoodParticle
   - BadParticle
+  - Ground
+  - Crack
   layers:
   - Default
   - TransparentFX
@@ -14,7 +16,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Power Crack
   - 
   - 
   - 

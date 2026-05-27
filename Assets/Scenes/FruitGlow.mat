@@ -29,7 +29,7 @@ Material:
   - _RECEIVE_SHADOWS_OFF
   - _SPECULAR_SETUP
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
   m_CustomRenderQueue: 2007
@@ -37,7 +37,7 @@ Material:
     RenderType: Opaque
   disabledShaderPasses:
   - MOTIONVECTORS
-  m_LockedProperties: 
+  m_LockedProperties: _BumpMap _ReceiveShadows _Smoothness
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -153,7 +153,7 @@ Material:
     - _QueueOffset: 7
     - _ReceiveShadows: 0
     - _Saturation: 0
-    - _Smoothness: 1
+    - _Smoothness: 0.383
     - _SmoothnessTextureChannel: 0
     - _Source: 0
     - _SpecularHighlights: 1
@@ -175,11 +175,11 @@ Material:
     - _ZWrite: 1
     - __dirty: 1
     m_Colors:
-    - _BaseColor: {r: 0.50309455, g: 0, b: 0.09366524, a: 1}
-    - _Color: {r: 0.50309455, g: 0, b: 0.09366524, a: 1}
+    - _BaseColor: {r: 0.5393209, g: 0, b: 0.1290141, a: 1}
+    - _Color: {r: 0.5393209, g: 0, b: 0.1290141, a: 1}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 0}
     - _DetailSpecularColor: {r: 1, g: 1, b: 1, a: 0}
-    - _EmissionColor: {r: 0.3871699, g: 0, b: 0.15242958, a: 1}
+    - _EmissionColor: {r: 0.27849072, g: 0, b: 0, a: 1}
     - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
