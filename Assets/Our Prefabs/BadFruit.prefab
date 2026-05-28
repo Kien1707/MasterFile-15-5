@@ -312,7 +312,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4e174e06b58e00640975755e703a8581, type: 2}
+  - {fileID: 2100000, guid: d029bc948c287614b8588d8acfbed73c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -339,7 +339,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -2477511411847689622, guid: 1e4832ceb24b50b4f817c6d8a4af4021, type: 3}
+  m_Mesh: {fileID: 1890910595786045333, guid: 761944f403c24dc48b5f5c807648a6f4, type: 3}
   m_Bones:
   - {fileID: 6048412974755561184}
   - {fileID: 6605745377197805014}
@@ -440,6 +440,14 @@ MonoBehaviour:
   particleDelay: 2
   disappearDelay: 3
   poofEffect: {fileID: 0}
+  duration: 0.7
+  speed: 10
+  amplitude: 0.15
+  sound: {fileID: 0}
+  crackVolume: {fileID: 0}
+  crackTargetScale: {x: 2, y: 2, z: 2}
+  crackGrowDuration: 2
+  crackGroundY: 0
   isHeld: 0
 --- !u!65 &339551610656089795
 BoxCollider:

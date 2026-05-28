@@ -46,6 +46,18 @@ public class GroworWilt : MonoBehaviour
         }
     }
 
+    public void RegisterAnimators(Animator[] animators)
+    {
+        foreach (Animator a in animators)
+        {
+            if (!zoneAnimators.Contains(a))
+            {
+                zoneAnimators.Add(a);
+                a.SetInteger("State", currentState);
+            }
+        }
+    }
+
     void CollectParticlesByTag(string tag, List<ParticleSystem> targetList)
     {
         GameObject[] taggedObjects = GameObject.FindGameObjectsWithTag(tag);
@@ -78,6 +90,11 @@ public class GroworWilt : MonoBehaviour
         else if (!fruitScript.isGoodFruit && currentState > -1)
             StartCoroutine(DelayedStateChange(-1));
     }
+
+    
+
+
+
 
     // ---------------------------------------------------------
     // STATE CHANGE + RANDOM SOUND

@@ -11,11 +11,11 @@ public class VisualStateController : MonoBehaviour
 
     [Header("Brightness per State")]
     public float brightMinus1 = 0.4f;
-    public float bright0 = 1f;
+    public float bright0 = 0.8f;
     public float bright1 = 1.5f;
 
     [Header("Lerp Speed")]
-    public float lerpDuration = 0.5f;
+    public float lerpDuration = 1.5f;
 
     private List<Material> materials = new List<Material>();
     private GroworWilt growWilt;

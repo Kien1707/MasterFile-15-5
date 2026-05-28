@@ -8,7 +8,7 @@ public class RandomizeChildren : MonoBehaviour
     [Header("Scale")]
     public bool randomizeScale = true;
     public float minScale = 1f;
-    public float maxScale = 2f;
+    public float maxScale = 1.5f;
 
     void Start()
     {
