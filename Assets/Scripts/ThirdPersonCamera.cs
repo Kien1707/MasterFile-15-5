@@ -7,18 +7,21 @@ public class ThirdPersonCamera : MonoBehaviour
     public Transform target; // Player
 
     [Header("Camera Settings")]
-    public Vector3 offset = new Vector3(0f, 2f, -10f);
+    public Vector3 offset = new Vector3(0f, 2f, -12f);  // increased base distance
     public float mouseSensitivity = 120f;
     public float smoothSpeed = 0.15f;
 
     [Header("Zoom")]
     public float zoomSpeed = 5f;
-    public float minDistance = 9f;
-    public float maxDistance = 15f;
-    public float zoomSmoothness = 0.2f; // NEW: damping for zoom (0 = instant, higher = slower)
+    public float minDistance = 8f;      // closest zoom
+    public float maxDistance = 25f;     // furthest zoom (increased)
+    public float zoomSmoothness = 0.2f;
 
-    private float currentZoomTarget;   // target zoom distance (set by scroll)
-    private float currentZoomVelocity; // for smooth damping
+    [Header("Ground Clamp")]
+    public float minCameraHeight = 0.5f; // camera will never go below this Y value
+
+    private float currentZoomTarget;
+    private float currentZoomVelocity;
     private float xRotation = 20f;
     private float yRotation = 0f;
 
@@ -26,14 +29,12 @@ public class ThirdPersonCamera : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         currentZoomTarget = offset.magnitude;
-
-        // Start the slight zoom‑out animation (e.g. from 2 to target distance over 3s)
         StartCoroutine(InitialZoomOut());
     }
 
     IEnumerator InitialZoomOut()
     {
-        float startDistance = 4f;   // starting close
+        float startDistance = 4f;
         float endDistance = currentZoomTarget;
         float duration = 3f;
         float elapsed = 0f;
@@ -81,22 +82,24 @@ public class ThirdPersonCamera : MonoBehaviour
     void FollowTarget()
     {
         Quaternion rotation = Quaternion.Euler(xRotation, yRotation, 0f);
-        // Smoothly interpolate current distance toward target using damping
         float currentDistance = Mathf.SmoothDamp(
-            GetCurrentDistance(), 
-            currentZoomTarget, 
-            ref currentZoomVelocity, 
+            GetCurrentDistance(),
+            currentZoomTarget,
+            ref currentZoomVelocity,
             zoomSmoothness
         );
 
         Vector3 zoomOffset = offset.normalized * currentDistance;
         Vector3 desiredPos = target.position + rotation * zoomOffset;
 
+        // Ground clamp – prevent camera from going underground
+        if (desiredPos.y < minCameraHeight)
+            desiredPos.y = minCameraHeight;
+
         transform.position = Vector3.Lerp(transform.position, desiredPos, smoothSpeed);
         transform.LookAt(target);
     }
 
-    // Helper to get the actual current distance (magnitude from target to camera)
     float GetCurrentDistance()
     {
         if (target == null) return currentZoomTarget;
@@ -111,11 +114,7 @@ public class ThirdPersonCamera : MonoBehaviour
         if (camForward.sqrMagnitude > 0.01f)
         {
             Quaternion targetRot = Quaternion.LookRotation(camForward);
-            target.rotation = Quaternion.Slerp(
-                target.rotation,
-                targetRot,
-                10f * Time.deltaTime
-            );
+            target.rotation = Quaternion.Slerp(target.rotation, targetRot, 10f * Time.deltaTime);
         }
     }
 }

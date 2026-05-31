@@ -10,8 +10,8 @@ public class VisualStateController : MonoBehaviour
     public float sat1 = 1.6f;
 
     [Header("Brightness per State")]
-    public float brightMinus1 = 0.4f;
-    public float bright0 = 0.8f;
+    public float brightMinus1 = 0f;
+    public float bright0 = 0.7f;
     public float bright1 = 1.5f;
 
     [Header("Lerp Speed")]

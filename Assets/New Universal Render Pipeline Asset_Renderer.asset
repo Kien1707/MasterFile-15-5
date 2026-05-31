@@ -69,7 +69,7 @@ MonoBehaviour:
   m_Active: 1
   layerMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 128
   overrideMaterial: {fileID: 2100000, guid: 68687b1ac76414c80820f04a950d2b8f, type: 2}
   computeShader: {fileID: 7200000, guid: 02619cec329ba4e4a8023528c567ecc9, type: 3}
   textureResolution: 64
@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Active: 1
   layerMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 128
   overrideMaterial: {fileID: 2100000, guid: 68687b1ac76414c80820f04a950d2b8f, type: 2}
   computeShader: {fileID: 7200000, guid: 02619cec329ba4e4a8023528c567ecc9, type: 3}
   textureResolution: 64
