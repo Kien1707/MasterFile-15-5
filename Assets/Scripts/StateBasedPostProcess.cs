@@ -7,30 +7,45 @@ public class StateBasedPostProcess : MonoBehaviour
     [Header("Volume")]
     public Volume postProcessVolume;
 
-    [Header("Normal Settings (state 0)")]
-    [Range(0f, 1f)] public float normalVignette = 0f;
-    [Range(-2f, 2f)] public float normalExposure = 0f;  // Exposure compensation
-    [Range(0f, 2f)] public float normalBloomIntensity = 0f;
+    [Header("Offset per State")]
+    // Offsets are ADDED to the original volume values
+    [Header("Normal (state 0) – typically zero offset")]
+    [Range(-1f, 1f)] public float normalVignetteOffset = 0f;
+    [Range(-2f, 2f)] public float normalExposureOffset = 0f;
+    [Range(-2f, 2f)] public float normalBloomOffset = 0f;
 
-    [Header("Decay Settings (state -1)")]
-    [Range(0f, 1f)] public float decayVignette = 0.4f;
-    [Range(-2f, 2f)] public float decayExposure = -0.5f; // darker
-    [Range(0f, 2f)] public float decayBloomIntensity = 0f;
+    [Header("Decay (state -1)")]
+    [Range(-1f, 1f)] public float decayVignetteOffset = 0.4f;
+    [Range(-2f, 2f)] public float decayExposureOffset = -0.5f;
+    [Range(-2f, 2f)] public float decayBloomOffset = 0f;
 
-    [Header("Flourish Settings (state 1)")]
-    [Range(0f, 1f)] public float flourishVignette = 0f;
-    [Range(-2f, 2f)] public float flourishExposure = 0.8f; // brighter
-    [Range(0f, 2f)] public float flourishBloomIntensity = 0.5f;
+    [Header("Flourish (state 1)")]
+    [Range(-1f, 1f)] public float flourishVignetteOffset = 0f;
+    [Range(-2f, 2f)] public float flourishExposureOffset = 0.8f;
+    [Range(-2f, 2f)] public float flourishBloomOffset = 0.5f;
 
     [Header("Transition")]
     public float transitionSpeed = 3f;
 
+    // Current target offsets (blended)
+    private float targetVignetteOffset;
+    private float targetExposureOffset;
+    private float targetBloomOffset;
+
+    // Current actual values (blended)
+    private float currentVignetteOffset;
+    private float currentExposureOffset;
+    private float currentBloomOffset;
+
+    // Baseline values from the Volume (read once at start)
+    private float baselineVignette;
+    private float baselineExposure;
+    private float baselineBloom;
+
+    // References to effects
     private Vignette vignette;
     private Bloom bloom;
     private ColorAdjustments colorAdjustments;
-    private float currentVignette;
-    private float currentExposure;
-    private float currentBloomIntensity;
 
     private int currentPriorityState = 0; // 0=normal, -1=decay, 1=flourish
 
@@ -41,94 +56,104 @@ public class StateBasedPostProcess : MonoBehaviour
 
         if (postProcessVolume == null)
         {
-            Debug.LogError("No Volume found!");
+            Debug.LogError("StateBasedPostProcess: No Volume found!");
+            enabled = false;
             return;
         }
 
-        // Get or add effects
+        // Get or add effects, but also read their current values
         if (!postProcessVolume.profile.TryGet(out vignette))
         {
             vignette = postProcessVolume.profile.Add<Vignette>(true);
             vignette.active = true;
+            vignette.intensity.value = 0f; // default if not present
         }
+        baselineVignette = vignette.intensity.value;
+
         if (!postProcessVolume.profile.TryGet(out bloom))
         {
             bloom = postProcessVolume.profile.Add<Bloom>(true);
             bloom.active = true;
+            bloom.intensity.value = 0f;
         }
+        baselineBloom = bloom.intensity.value;
+
         if (!postProcessVolume.profile.TryGet(out colorAdjustments))
         {
             colorAdjustments = postProcessVolume.profile.Add<ColorAdjustments>(true);
             colorAdjustments.active = true;
+            colorAdjustments.postExposure.value = 0f;
         }
+        baselineExposure = colorAdjustments.postExposure.value;
 
-        // Set initial values
-        currentVignette = normalVignette;
-        currentExposure = normalExposure;
-        currentBloomIntensity = normalBloomIntensity;
-        UpdateEffects();
+        // Start with normal offsets
+        currentVignetteOffset = normalVignetteOffset;
+        currentExposureOffset = normalExposureOffset;
+        currentBloomOffset = normalBloomOffset;
+        ApplyCurrentOffsets();
     }
 
     void Update()
     {
         if (postProcessVolume == null) return;
 
-        // Determine the highest priority state the player is inside
-        int priorityState = 0; // default normal
+        // Determine highest priority state player is in (flourish > decay > normal)
+        int priorityState = 0;
         GroworWilt[] clusters = FindObjectsOfType<GroworWilt>();
         foreach (var cluster in clusters)
         {
             if (cluster.IsPlayerInRange())
             {
                 int state = cluster.currentState;
-                if (state == 1) { priorityState = 1; break; } // flourish overrides everything
-                else if (state == -1) priorityState = -1; // decay, but continue to check for flourish
+                if (state == 1) { priorityState = 1; break; }
+                if (state == -1) priorityState = -1;
             }
         }
 
         if (priorityState != currentPriorityState)
         {
             currentPriorityState = priorityState;
-            // Optional: play sound or particle on transition
+            // Optionally play sound or particle on transition
         }
 
-        float targetVignette, targetExposure, targetBloom;
+        // Determine target offsets based on state
         switch (currentPriorityState)
         {
             case -1:
-                targetVignette = decayVignette;
-                targetExposure = decayExposure;
-                targetBloom = decayBloomIntensity;
+                targetVignetteOffset = decayVignetteOffset;
+                targetExposureOffset = decayExposureOffset;
+                targetBloomOffset = decayBloomOffset;
                 break;
             case 1:
-                targetVignette = flourishVignette;
-                targetExposure = flourishExposure;
-                targetBloom = flourishBloomIntensity;
+                targetVignetteOffset = flourishVignetteOffset;
+                targetExposureOffset = flourishExposureOffset;
+                targetBloomOffset = flourishBloomOffset;
                 break;
             default:
-                targetVignette = normalVignette;
-                targetExposure = normalExposure;
-                targetBloom = normalBloomIntensity;
+                targetVignetteOffset = normalVignetteOffset;
+                targetExposureOffset = normalExposureOffset;
+                targetBloomOffset = normalBloomOffset;
                 break;
         }
 
-        // Smooth transition
-        currentVignette = Mathf.Lerp(currentVignette, targetVignette, Time.deltaTime * transitionSpeed);
-        currentExposure = Mathf.Lerp(currentExposure, targetExposure, Time.deltaTime * transitionSpeed);
-        currentBloomIntensity = Mathf.Lerp(currentBloomIntensity, targetBloom, Time.deltaTime * transitionSpeed);
+        // Smoothly blend offsets
+        currentVignetteOffset = Mathf.Lerp(currentVignetteOffset, targetVignetteOffset, Time.deltaTime * transitionSpeed);
+        currentExposureOffset = Mathf.Lerp(currentExposureOffset, targetExposureOffset, Time.deltaTime * transitionSpeed);
+        currentBloomOffset = Mathf.Lerp(currentBloomOffset, targetBloomOffset, Time.deltaTime * transitionSpeed);
 
-        UpdateEffects();
+        ApplyCurrentOffsets();
     }
 
-    void UpdateEffects()
+    void ApplyCurrentOffsets()
     {
+        // Apply baseline + offset
         if (vignette != null)
-            vignette.intensity.value = currentVignette;
+            vignette.intensity.value = baselineVignette + currentVignetteOffset;
 
         if (bloom != null)
-            bloom.intensity.value = currentBloomIntensity;
+            bloom.intensity.value = baselineBloom + currentBloomOffset;
 
         if (colorAdjustments != null)
-            colorAdjustments.postExposure.value = currentExposure;
+            colorAdjustments.postExposure.value = baselineExposure + currentExposureOffset;
     }
 }

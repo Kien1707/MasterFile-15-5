@@ -49,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleCameraLook();
         HandleDoubleTapSprint();
-        RotatePlayerToCamera();
+        // RotatePlayerToCamera();
         MovePlayer();
         HandleFootstep();
     }
@@ -76,7 +76,8 @@ public class PlayerMovement : MonoBehaviour
 
         playerCamera.localRotation = Quaternion.Euler(cameraPitch, 0f, 0f);
 
-        transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity * Time.deltaTime);
+        // Remove this line ↓
+        // transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity * Time.deltaTime);
     }
 
     // ---------------------------------------------------------
@@ -131,6 +132,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetButtonDown("Jump") && grounded)
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            GetComponent<Sample.GhostScript>()?.OnJump();
 
         verticalVelocity += gravity * Time.deltaTime;
 

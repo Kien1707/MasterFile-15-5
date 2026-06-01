@@ -11,9 +11,11 @@ public class TutorialManager : MonoBehaviour
     [Header("Settings")]
     public float fadeDuration = 1f;
     public float delayBetweenTutorials = 0.5f;
+    public float initialDelay = 5f;       // ← NEW: delay before showing first tip
 
     private int tutorialStep = 0;
     private bool isTransitioning = false;
+    private bool tutorialActive = false;   // ← NEW: prevents update checks before delay
 
     void Start()
     {
@@ -21,12 +23,19 @@ public class TutorialManager : MonoBehaviour
         HideInstant(pickupFruitText);
         HideInstant(openFruitText);
 
+        StartCoroutine(DelayedTutorialStart());
+    }
+
+    IEnumerator DelayedTutorialStart()
+    {
+        yield return new WaitForSeconds(initialDelay);
+        tutorialActive = true;
         StartCoroutine(FadeIn(zoomText));
     }
 
     void Update()
     {
-        if (isTransitioning) return;
+        if (!tutorialActive || isTransitioning) return;
 
         switch (tutorialStep)
         {

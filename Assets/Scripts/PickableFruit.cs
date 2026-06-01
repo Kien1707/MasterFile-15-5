@@ -127,6 +127,8 @@ public class PickableFruit : MonoBehaviour
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
 
+        player?.GetComponent<Sample.GhostScript>()?.OnPickupFruit();
+
         if (rb != null)
         {
             rb.isKinematic = true;
@@ -143,6 +145,8 @@ public class PickableFruit : MonoBehaviour
         isOnGround = false;
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
+
+        player?.GetComponent<Sample.GhostScript>()?.OnPickupFruit();
 
         if (rb != null)
         {
