@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
@@ -6,7 +6,7 @@ using System.Collections;
 public class RestartUI : MonoBehaviour
 {
     [Header("References")]
-    public CanvasGroup overlayPanel;   // Black panel with 0.5 alpha
+    public CanvasGroup overlayPanel;
     public Button restartButton;
 
     [Header("Fade Settings")]
@@ -28,8 +28,7 @@ public class RestartUI : MonoBehaviour
         {
             overlayPanel.alpha = 0f;
             overlayPanel.gameObject.SetActive(false);
-            // Ensure panel doesn't block clicks if we want button to work (it will be over panel anyway)
-            overlayPanel.blocksRaycasts = false; // panel shouldn't block; button will handle clicks
+            overlayPanel.blocksRaycasts = false;
         }
 
         if (restartButton != null)
@@ -41,13 +40,23 @@ public class RestartUI : MonoBehaviour
 
     void Update()
     {
-        if (fruitCounter == null || isEnding) return;
+        if (fruitCounter == null) return;
 
+        // Khi ending xảy ra → chuẩn bị hiện UI
         if (fruitCounter.EndingTriggered && !hasShown)
         {
             hasShown = true;
             isEnding = true;
             StartCoroutine(ShowAfterDelay());
+        }
+
+        // Khi UI đã hiện → bấm A để restart
+        if (hasShown)
+        {
+            if (Input.GetKeyDown(KeyCode.JoystickButton0)) // A button
+            {
+                RestartGame();
+            }
         }
     }
 
@@ -59,7 +68,6 @@ public class RestartUI : MonoBehaviour
 
     void ShowRestartUI()
     {
-        // Unlock the cursor so the player can click the button
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 

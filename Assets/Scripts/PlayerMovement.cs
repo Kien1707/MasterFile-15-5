@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
@@ -25,19 +27,35 @@ public class PlayerMovement : MonoBehaviour
     [Header("Sound")]
     public PlayerSound sound;
 
+    [Header("Ghost Animation")]
+    public Animator ghostAnimator;
+
     private CharacterController controller;
     private float verticalVelocity;
     private float currentVelocity;
-
-    private float lastWPressTime = -1f;
-    private bool isSprinting = false;
 
     private Vector2 currentMouseDelta;
     private Vector2 currentMouseDeltaVelocity;
     private float cameraPitch = 0f;
 
-    // FOOTSTEP STATE
     private bool isFootstepPlaying = false;
+
+    // Sprint logic
+    private float lastWPressTime = -1f;
+    private bool isSprintingKeyboard = false;
+    private bool isSprintingController = false;
+
+    // Animation flags
+    private bool isJumping = false;
+    private bool isPickingUp = false;
+
+    private Coroutine jumpRoutine;
+    private Coroutine pickupRoutine;
+
+    private static readonly int IdleState = Animator.StringToHash("Base Layer.idle");
+    private static readonly int MoveState = Animator.StringToHash("Base Layer.move");
+    private static readonly int SurprisedState = Animator.StringToHash("Base Layer.surprised");
+    private static readonly int AttackState = Animator.StringToHash("Base Layer.attack");
 
     void Start()
     {
@@ -48,10 +66,11 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         HandleCameraLook();
-        HandleDoubleTapSprint();
+        HandleSprintLogic();
         RotatePlayerToCamera();
         MovePlayer();
         HandleFootstep();
+        HandleGhostAnimation();
     }
 
     // ---------------------------------------------------------
@@ -59,45 +78,47 @@ public class PlayerMovement : MonoBehaviour
     // ---------------------------------------------------------
     void HandleCameraLook()
     {
-        Vector2 targetMouseDelta = new Vector2(
-            Input.GetAxis("Mouse X"),
-            Input.GetAxis("Mouse Y")
-        );
+        float mouseX = InputOverride.AxisOverride("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = InputOverride.AxisOverride("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         currentMouseDelta = Vector2.SmoothDamp(
             currentMouseDelta,
-            targetMouseDelta,
+            new Vector2(mouseX, mouseY),
             ref currentMouseDeltaVelocity,
             mouseSmoothTime
         );
 
-        cameraPitch -= currentMouseDelta.y * mouseSensitivity * Time.deltaTime;
+        cameraPitch -= currentMouseDelta.y;
         cameraPitch = Mathf.Clamp(cameraPitch, -80f, 80f);
 
         playerCamera.localRotation = Quaternion.Euler(cameraPitch, 0f, 0f);
-
-        transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity * Time.deltaTime);
+        transform.Rotate(Vector3.up * currentMouseDelta.x);
     }
 
     // ---------------------------------------------------------
-    // DOUBLE TAP W → SPRINT
+    // SPRINT LOGIC
     // ---------------------------------------------------------
-    void HandleDoubleTapSprint()
+    void HandleSprintLogic()
     {
         if (Input.GetKeyDown(KeyCode.W))
         {
             if (Time.time - lastWPressTime <= doubleTapTime)
-                isSprinting = true;
+                isSprintingKeyboard = true;
 
             lastWPressTime = Time.time;
         }
 
         if (!Input.GetKey(KeyCode.W))
-            isSprinting = false;
+            isSprintingKeyboard = false;
+
+        float zController = InputOverride.AxisOverride("Vertical");
+        bool LB = Input.GetKey(KeyCode.JoystickButton4);
+
+        isSprintingController = (zController > 0.7f && LB);
     }
 
     // ---------------------------------------------------------
-    // PLAYER ROTATION FOLLOWS CAMERA
+    // PLAYER ROTATION
     // ---------------------------------------------------------
     void RotatePlayerToCamera()
     {
@@ -129,13 +150,26 @@ public class PlayerMovement : MonoBehaviour
         if (grounded && verticalVelocity < 0)
             verticalVelocity = -2f;
 
-        if (Input.GetButtonDown("Jump") && grounded)
+        bool jumpPressed =
+            Input.GetKeyDown(KeyCode.Space) ||
+            InputOverride.KeyDownOverride(KeyCode.Space);
+
+        if (jumpPressed && grounded)
+        {
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            PlayJumpAnimation();
+        }
 
         verticalVelocity += gravity * Time.deltaTime;
 
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
+        float xKeyboard = Input.GetAxis("Horizontal");
+        float zKeyboard = Input.GetAxis("Vertical");
+
+        float xController = InputOverride.AxisOverride("Horizontal");
+        float zController = InputOverride.AxisOverride("Vertical");
+
+        float x = Mathf.Abs(xController) > 0.1f ? xController : xKeyboard;
+        float z = Mathf.Abs(zController) > 0.1f ? zController : zKeyboard;
 
         Vector3 forward = playerCamera.forward;
         Vector3 right = playerCamera.right;
@@ -148,7 +182,9 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 move = forward * z + right * x;
 
-        float speed = isSprinting ? moveSpeed * sprintMultiplier : moveSpeed;
+        bool sprinting = isSprintingKeyboard || isSprintingController;
+
+        float speed = sprinting ? moveSpeed * sprintMultiplier : moveSpeed;
 
         Vector3 finalMove = move.normalized * speed;
         finalMove.y = verticalVelocity;
@@ -157,15 +193,21 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // ---------------------------------------------------------
-    // FOOTSTEP START / STOP + RANDOM START TIME
+    // FOOTSTEP
     // ---------------------------------------------------------
     void HandleFootstep()
     {
-        bool isMoving =
+        bool isMovingKeyboard =
             Input.GetKey(KeyCode.W) ||
             Input.GetKey(KeyCode.A) ||
             Input.GetKey(KeyCode.S) ||
             Input.GetKey(KeyCode.D);
+
+        bool isMovingController =
+            Mathf.Abs(InputOverride.AxisOverride("Horizontal")) > 0.2f ||
+            Mathf.Abs(InputOverride.AxisOverride("Vertical")) > 0.2f;
+
+        bool isMoving = isMovingKeyboard || isMovingController;
 
         if (isMoving && controller.isGrounded)
         {
@@ -176,7 +218,6 @@ public class PlayerMovement : MonoBehaviour
                 sound.audioSource.clip = clip;
                 sound.audioSource.loop = true;
 
-                // RANDOM START TIME
                 float randomStart = Random.Range(0f, clip.length);
                 sound.audioSource.time = randomStart;
 
@@ -193,4 +234,64 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+    // ---------------------------------------------------------
+    // GHOST ANIMATION
+    // ---------------------------------------------------------
+    void HandleGhostAnimation()
+    {
+        if (isJumping || isPickingUp)
+            return;
+
+        bool moving =
+            Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f ||
+            Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f ||
+            Mathf.Abs(InputOverride.AxisOverride("Horizontal")) > 0.1f ||
+            Mathf.Abs(InputOverride.AxisOverride("Vertical")) > 0.1f;
+
+        if (moving)
+            ghostAnimator.CrossFade(MoveState, 0.1f);
+        else
+            ghostAnimator.CrossFade(IdleState, 0.1f);
+    }
+
+    public void PlayJumpAnimation()
+    {
+        if (jumpRoutine != null) StopCoroutine(jumpRoutine);
+
+        isJumping = true;
+        ghostAnimator.CrossFade(AttackState, 0.1f);
+
+        jumpRoutine = StartCoroutine(JumpAnim());
+    }
+
+    IEnumerator JumpAnim()
+    {
+        yield return new WaitForSeconds(0.6f);
+        isJumping = false;
+    }
+
+    public void PlayPickupAnimation()
+    {
+        if (pickupRoutine != null) StopCoroutine(pickupRoutine);
+
+        isPickingUp = true;
+        ghostAnimator.CrossFade(SurprisedState, 0.1f);
+
+        pickupRoutine = StartCoroutine(PickupAnim());
+    }
+
+    IEnumerator PickupAnim()
+    {
+        yield return new WaitForSeconds(1f);
+        isPickingUp = false;
+    }
+    public void ResetCameraPitch()
+{
+    cameraPitch = 0f;
+
+    if (playerCamera != null)
+        playerCamera.localRotation = Quaternion.Euler(0f, 0f, 0f);
+}
+
 }

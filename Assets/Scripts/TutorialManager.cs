@@ -30,15 +30,21 @@ public class TutorialManager : MonoBehaviour
 
         switch (tutorialStep)
         {
-            case 0: // Zoom instruction – wait for scroll wheel
-                if (Input.GetAxis("Mouse ScrollWheel") != 0f)
+            // ============================
+            // STEP 0 — ZOOM
+            // ============================
+            case 0:
+                if (DidZoom())
                 {
                     StartCoroutine(TransitionTutorial(zoomText, pickupFruitText));
                     tutorialStep++;
                 }
                 break;
 
-            case 1: // Pick up fruit instruction – wait for fruit held
+            // ============================
+            // STEP 1 — PICK FRUIT
+            // ============================
+            case 1:
                 if (PickableFruit.AnyFruitHeld)
                 {
                     StartCoroutine(TransitionTutorial(pickupFruitText, openFruitText));
@@ -46,14 +52,49 @@ public class TutorialManager : MonoBehaviour
                 }
                 break;
 
-            case 2: // Open fruit instruction – wait for F key
-                if (Input.GetKeyDown(KeyCode.F))
+            // ============================
+            // STEP 2 — OPEN FRUIT
+            // ============================
+            case 2:
+                if (DidOpenFruit())
                 {
                     StartCoroutine(FadeOut(openFruitText));
                     tutorialStep++;
                 }
                 break;
         }
+    }
+
+    // ============================
+    // DETECT ZOOM (Mouse + Controller)
+    // ============================
+    bool DidZoom()
+    {
+        // Chuột
+        if (Input.GetAxis("Mouse ScrollWheel") != 0f)
+            return true;
+
+        // Controller (LT/RT → scroll override)
+        if (Input.GetAxis("LT") > 0.2f) return true;
+        if (Input.GetAxis("RT") > 0.2f) return true;
+
+        return false;
+    }
+
+    // ============================
+    // DETECT OPEN FRUIT (F + B)
+    // ============================
+    bool DidOpenFruit()
+    {
+        // Bàn phím
+        if (Input.GetKeyDown(KeyCode.F))
+            return true;
+
+        // Controller (B = JoystickButton1)
+        if (Input.GetKeyDown(KeyCode.JoystickButton1))
+            return true;
+
+        return false;
     }
 
     IEnumerator TransitionTutorial(CanvasGroup current, CanvasGroup next)

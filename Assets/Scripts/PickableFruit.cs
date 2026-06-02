@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class PickableFruit : MonoBehaviour
@@ -53,8 +53,14 @@ public class PickableFruit : MonoBehaviour
     public static GameObject currentlyHeldFruit = null;
     public static bool AnyFruitHeld;
 
+    // 🔥 NEW — chống auto-pick
+    private float enterRangeTime = 0f;
+    private float spawnTime = 0f;
+
     void Start()
     {
+        spawnTime = Time.time;
+
         rb = GetComponent<Rigidbody>();
 
         if (fruitAnimator == null)
@@ -69,55 +75,64 @@ public class PickableFruit : MonoBehaviour
 
     void Update()
     {
-        if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isHeld && !isOnGround && currentlyHeldFruit == null)
-            HoldFruit();
+        // 🔥 CHẶN PICK TRONG 0.4s ĐẦU SAU KHI SCENE LOAD
+        if (Time.time - spawnTime < 0.4f)
+            return;
 
-        else if (isHeld && Input.GetKeyDown(KeyCode.E) && !isAnimating && !isDisappearing)
-            DropFruit();
+        bool pressedE = PressedE();
+        bool pressedF = PressedF();
 
-        else if (isOnGround && playerInRange && Input.GetKeyDown(KeyCode.E) && currentlyHeldFruit == null)
-            PickupFromGround();
-
-        else if (isHeld && Input.GetKeyDown(KeyCode.F) && !isAnimating && !isDisappearing)
+        // PICK FROM AIR
+        if (playerInRange && pressedE && Time.time - enterRangeTime > 0.2f &&
+            !isHeld && !isOnGround && currentlyHeldFruit == null)
         {
-            bool block = false;
-            GameObject[] clusters = GameObject.FindGameObjectsWithTag("Cluster");
-            foreach (GameObject clusterObj in clusters)
-            {
-                GroworWilt gw = clusterObj.GetComponent<GroworWilt>();
-                if (gw != null && gw.IsPlayerInRange() && gw.currentState != 0)
-                {
-                    block = true;
-                    break;
-                }
-            }
-
-            if (block)
-            {
-                StartCoroutine(JiggleFruit());
-            }
-            else
-            {
-                if (sound != null)
-                {
-                    Glow glow = GetComponent<Glow>();
-                    if (glow != null)
-                    {
-                        if (glow.isGoodFruit)
-                            sound.Play(PlayerAction.UnfoldGood);
-                        else
-                            sound.Play(PlayerAction.UnfoldBad);
-                    }
-                }
-
-                TriggerAnimation();
-            }
+            HoldFruit();
+            return;
         }
 
+        // DROP
+        if (isHeld && pressedE && !isAnimating && !isDisappearing)
+        {
+            DropFruit();
+            return;
+        }
+
+        // PICK FROM GROUND
+        if (isOnGround && playerInRange && pressedE && Time.time - enterRangeTime > 0.2f &&
+            currentlyHeldFruit == null)
+        {
+            PickupFromGround();
+            return;
+        }
+
+        // UNFOLD
+        if (isHeld && pressedF && !isAnimating && !isDisappearing && !isJiggling)
+        {
+            StartUnfold();
+            return;
+        }
+
+        // HOVER
         if (isHeld && !isAnimating && !isDisappearing && !isJiggling)
             HoverAbovePlayer();
     }
 
+    // 🔥 CHỈ NHẬN E HOẶC X — KHÔNG DÙNG InputOverride
+    bool PressedE()
+    {
+        return Input.GetKeyDown(KeyCode.E) ||
+               Input.GetKeyDown(KeyCode.JoystickButton2);
+    }
+
+    bool PressedF()
+    {
+        return Input.GetKeyDown(KeyCode.F) ||
+               Input.GetKeyDown(KeyCode.JoystickButton1);
+    }
+
+    // ---------------------------------------------------------
+    // HOLD FRUIT
+    // ---------------------------------------------------------
     public void HoldFruit()
     {
         if (sound != null)
@@ -126,6 +141,8 @@ public class PickableFruit : MonoBehaviour
         isHeld = true;
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
+
+        player.GetComponent<PlayerMovement>()?.PlayPickupAnimation();
 
         if (rb != null)
         {
@@ -143,6 +160,8 @@ public class PickableFruit : MonoBehaviour
         isOnGround = false;
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
+
+        player.GetComponent<PlayerMovement>()?.PlayPickupAnimation();
 
         if (rb != null)
         {
@@ -163,6 +182,54 @@ public class PickableFruit : MonoBehaviour
             rb.useGravity = true;
         }
     }
+
+    // ---------------------------------------------------------
+    // UNFOLD LOGIC — FIX DOUBLE CALL
+    // ---------------------------------------------------------
+    void StartUnfold()
+    {
+        if (isAnimating || isDisappearing || isJiggling)
+            return;
+
+        bool block = false;
+        GameObject[] clusters = GameObject.FindGameObjectsWithTag("Cluster");
+
+        foreach (GameObject clusterObj in clusters)
+        {
+            GroworWilt gw = clusterObj.GetComponent<GroworWilt>();
+            if (gw != null && gw.IsPlayerInRange() && gw.currentState != 0)
+            {
+                block = true;
+                break;
+            }
+        }
+
+        if (block)
+        {
+            StartCoroutine(JiggleFruit());
+            return;
+        }
+
+        // SOUND
+        if (sound != null)
+        {
+            Glow glow = GetComponent<Glow>();
+            if (glow != null)
+            {
+                if (glow.isGoodFruit)
+                    sound.Play(PlayerAction.UnfoldGood);
+                else
+                    sound.Play(PlayerAction.UnfoldBad);
+            }
+        }
+
+        isAnimating = true;
+        TriggerAnimation();
+    }
+
+    // ---------------------------------------------------------
+    // REST OF SCRIPT (UNCHANGED)
+    // ---------------------------------------------------------
 
     private IEnumerator JiggleFruit()
     {
@@ -187,7 +254,6 @@ public class PickableFruit : MonoBehaviour
         if (fruitAnimator == null)
             return;
 
-        isAnimating = true;
         animationLockPosition = transform.position;
 
         fruitAnimator.SetTrigger(animationTriggerName);
@@ -214,7 +280,6 @@ public class PickableFruit : MonoBehaviour
     {
         if (crackVolume == null) yield break;
 
-        // snap to ground at fruit's XZ position
         crackVolume.position = new Vector3(transform.position.x, crackGroundY, transform.position.z);
 
         float t = 0f;
@@ -324,6 +389,7 @@ public class PickableFruit : MonoBehaviour
         {
             playerInRange = true;
             player = other.transform;
+            enterRangeTime = Time.time; // 🔥 chống auto-pick
         }
     }
 
