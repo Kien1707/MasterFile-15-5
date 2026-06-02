@@ -142,7 +142,11 @@ public class PickableFruit : MonoBehaviour
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
 
+<<<<<<< HEAD
         player.GetComponent<PlayerMovement>()?.PlayPickupAnimation();
+=======
+        player?.GetComponent<Sample.GhostScript>()?.OnPickupFruit();
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
 
         if (rb != null)
         {
@@ -161,7 +165,11 @@ public class PickableFruit : MonoBehaviour
         currentlyHeldFruit = this.gameObject;
         AnyFruitHeld = true;
 
+<<<<<<< HEAD
         player.GetComponent<PlayerMovement>()?.PlayPickupAnimation();
+=======
+        player?.GetComponent<Sample.GhostScript>()?.OnPickupFruit();
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
 
         if (rb != null)
         {

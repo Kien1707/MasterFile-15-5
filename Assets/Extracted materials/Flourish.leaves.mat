@@ -95,7 +95,7 @@ Material:
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _Brightness: 1
+    - _Brightness: 1.7
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
@@ -125,13 +125,22 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _UVSec: 0
+<<<<<<< HEAD
     - _WindSpeed: 0.9
     - _WindStrength: 0.2
+=======
+    - _WindSpeed: 0.8
+    - _WindStrength: 0.284
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
     - _WorkflowMode: 0
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+<<<<<<< HEAD
     - _BaseColor: {r: 0, g: 0.065251514, b: 0.7830189, a: 1}
+=======
+    - _BaseColor: {r: 0, g: 0.083333254, b: 1, a: 1}
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
     - _Color: {r: 0.03577119, g: 0.06277235, b: 0.36543405, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0.59999996}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}

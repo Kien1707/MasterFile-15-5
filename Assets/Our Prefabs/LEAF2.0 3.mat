@@ -125,8 +125,13 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _UVSec: 0
+<<<<<<< HEAD
     - _WindSpeed: 0.8
     - _WindStrength: 0.7
+=======
+    - _WindSpeed: 0.63
+    - _WindStrength: 1
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
     - _WorkflowMode: 0
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
@@ -135,7 +140,11 @@ Material:
     - _Color: {r: 0.19581138, g: 0.17863287, b: 0.3944152, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+<<<<<<< HEAD
     - _WindDirection: {r: 1, g: 0.14, b: 0, a: 0}
+=======
+    - _WindDirection: {r: 1, g: 0, b: 0, a: 0}
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &6958502838810696685

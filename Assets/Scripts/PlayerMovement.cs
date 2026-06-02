@@ -66,8 +66,13 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         HandleCameraLook();
+<<<<<<< HEAD
         HandleSprintLogic();
         RotatePlayerToCamera();
+=======
+        HandleDoubleTapSprint();
+        // RotatePlayerToCamera();
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
         MovePlayer();
         HandleFootstep();
         HandleGhostAnimation();
@@ -92,7 +97,13 @@ public class PlayerMovement : MonoBehaviour
         cameraPitch = Mathf.Clamp(cameraPitch, -80f, 80f);
 
         playerCamera.localRotation = Quaternion.Euler(cameraPitch, 0f, 0f);
+<<<<<<< HEAD
         transform.Rotate(Vector3.up * currentMouseDelta.x);
+=======
+
+        // Remove this line ↓
+        // transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity * Time.deltaTime);
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
     }
 
     // ---------------------------------------------------------
@@ -157,8 +168,12 @@ public class PlayerMovement : MonoBehaviour
         if (jumpPressed && grounded)
         {
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+<<<<<<< HEAD
             PlayJumpAnimation();
         }
+=======
+            GetComponent<Sample.GhostScript>()?.OnJump();
+>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e
 
         verticalVelocity += gravity * Time.deltaTime;
 

@@ -32,9 +32,13 @@ public class MicUI : MonoBehaviour
     [Header("UI Scale (make mic smaller)")]
     public float uiScale = 0.5f;      // reduces maxHeight and maxY
 
+    [Header("Initial Delay")]
+    public float initialDelay = 3f;   // seconds before MicUI becomes active
+
     private bool wasActiveLastFrame = false;
     private FruitCounter fruitCounter;
     private bool endingTriggered = false;
+    private bool isReady = false;      // ← becomes true after delay
 
     void Start()
     {
@@ -47,10 +51,22 @@ public class MicUI : MonoBehaviour
         canvasGroup.alpha = idleAlpha;
         ResetBars();
         ResetObjects();
+
+        StartCoroutine(DelayedActivation());
+    }
+
+    System.Collections.IEnumerator DelayedActivation()
+    {
+        yield return new WaitForSeconds(initialDelay);
+        isReady = true;
+        Debug.Log("MicUI now active");
     }
 
     void Update()
     {
+        // Wait for delay to finish
+        if (!isReady) return;
+
         // Update ending flag
         if (fruitCounter != null)
             endingTriggered = fruitCounter.EndingTriggered;
@@ -122,13 +138,7 @@ public class MicUI : MonoBehaviour
                 yAxisObjects[i].localScale = scale;
             }
         }
-        else
-        {
-            // When not holding fruit, keep everything at minimum
-            // (ResetBars/ResetObjects already called on state change, but ensure they stay low)
-            // Optionally, you can also set them to min every frame – but that's wasteful.
-            // The reset on state change is enough.
-        }
+        // else: when not holding, keep at minimum (already reset on state change)
     }
 
     private void ResetBars()

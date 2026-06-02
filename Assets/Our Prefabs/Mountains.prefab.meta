@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Our Prefabs/Mountains.prefab.meta
 guid: a5dd327cd4d24324fb5ebb73feb938f2
+========
+guid: af28c4c9d70c74d4f8aafc025c643705
+>>>>>>>> 1245ed6b7c4e71318d928ff5dd9c6c2b7d39b34e:Assets/Ghost Player/Prefab/Ghost.prefab.meta
 PrefabImporter:
   externalObjects: {}
   userData: 
